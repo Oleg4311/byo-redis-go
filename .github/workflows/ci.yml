@@ -1,0 +1,53 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - name: Тесты с детектором гонок
+        if: matrix.os == 'ubuntu-latest'
+        run: go test -race -count=1 -cover ./...
+      - name: Тесты
+        if: matrix.os != 'ubuntu-latest'
+        run: go test -count=1 ./...
+
+  # Настоящие клиенты Redis против нашего сервера
+  compat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: sudo apt-get update && sudo apt-get install -y redis-tools
+      - name: redis-cli, redis-benchmark и тест go-redis против redis-cli
+        run: |
+          scripts/compat.sh
+          go test -count=1 -run TestRealRedisCLI -v ./internal/server
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/build-site.mjs
+      - run: node scripts/wasm-smoke.mjs site
