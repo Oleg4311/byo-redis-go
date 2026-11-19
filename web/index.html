@@ -31,7 +31,7 @@ input:focus-visible,button:focus-visible{outline:3px solid var(--acc);outline-of
 <p class="sub">Свой Redis на Go. Здесь тот же движок команд, что в сервере, собранный в WebAssembly: он работает в вашем браузере, сети нет.</p>
 
 <section class="card" aria-label="Терминал">
-  <div id="term" role="log" aria-live="polite" data-testid="term"></div>
+  <div id="term" role="log" aria-live="polite" aria-label="Терминал" tabindex="0" data-testid="term"></div>
   <form id="form" autocomplete="off">
     <input id="line" aria-label="Команда" placeholder="SET greeting hello EX 30" spellcheck="false" disabled data-testid="line">
     <button class="primary" type="submit" disabled id="send">Выполнить</button>

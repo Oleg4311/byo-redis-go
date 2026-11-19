@@ -4,3 +4,6 @@ dist/
 *.exe
 *.log
 .env
+node_modules/
+test-results/
+playwright-report/
