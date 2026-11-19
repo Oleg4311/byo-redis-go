@@ -1,0 +1,6 @@
+site/
+dist/
+*.aof
+*.exe
+*.log
+.env
