@@ -18,12 +18,12 @@ func push(c *ctx, front bool) resp.Value {
 	}
 	for _, v := range c.args[2:] {
 		if front {
-			en.list = append([][]byte{v}, en.list...)
+			en.list.pushFront(v)
 		} else {
-			en.list = append(en.list, v)
+			en.list.pushBack(v)
 		}
 	}
-	return resp.Int(int64(len(en.list)))
+	return resp.Int(int64(en.list.len()))
 }
 
 func cmdLPush(c *ctx) resp.Value { return push(c, true) }
@@ -54,23 +54,22 @@ func pop(c *ctx, front bool) resp.Value {
 		}
 		return resp.NullBulk()
 	}
-	if count > int64(len(en.list)) {
-		count = int64(len(en.list))
+	if count > int64(en.list.len()) {
+		count = int64(en.list.len())
 	}
-	var taken [][]byte
-	if front {
-		taken = en.list[:count]
-		en.list = en.list[count:]
-	} else {
-		n := int64(len(en.list))
-		taken = make([][]byte, 0, count)
-		for i := int64(0); i < count; i++ {
-			taken = append(taken, en.list[n-1-i])
+	taken := make([][]byte, 0, count)
+	for i := int64(0); i < count; i++ {
+		if front {
+			taken = append(taken, en.list.popFront())
+		} else {
+			taken = append(taken, en.list.popBack())
 		}
-		en.list = en.list[:n-count]
 	}
-	if len(en.list) == 0 {
+	if en.list.len() == 0 {
 		c.e.db.remove(key)
+	}
+	if !hasCount && len(taken) == 0 { // недостижимо: пустые списки не хранятся, но так нет паники при нарушении инварианта
+		return resp.NullBulk()
 	}
 	if hasCount {
 		return resp.BulkArray(taken)
@@ -89,7 +88,7 @@ func cmdLLen(c *ctx) resp.Value {
 	if en == nil {
 		return resp.Int(0)
 	}
-	return resp.Int(int64(len(en.list)))
+	return resp.Int(int64(en.list.len()))
 }
 
 func cmdLRange(c *ctx) resp.Value {
@@ -105,7 +104,7 @@ func cmdLRange(c *ctx) resp.Value {
 	if en == nil {
 		return resp.ArrayOf()
 	}
-	n := int64(len(en.list))
+	n := int64(en.list.len())
 	if start < 0 {
 		start += n
 	}
@@ -121,7 +120,7 @@ func cmdLRange(c *ctx) resp.Value {
 	if stop >= n {
 		stop = n - 1
 	}
-	return resp.BulkArray(en.list[start : stop+1])
+	return resp.BulkArray(en.list.slice(int(start), int(stop)))
 }
 
 func cmdLIndex(c *ctx) resp.Value {
@@ -136,14 +135,14 @@ func cmdLIndex(c *ctx) resp.Value {
 	if en == nil {
 		return resp.NullBulk()
 	}
-	n := int64(len(en.list))
+	n := int64(en.list.len())
 	if idx < 0 {
 		idx += n
 	}
 	if idx < 0 || idx >= n {
 		return resp.NullBulk()
 	}
-	return resp.BulkBytes(en.list[idx])
+	return resp.BulkBytes(en.list.at(int(idx)))
 }
 
 // ---- хэши ----
