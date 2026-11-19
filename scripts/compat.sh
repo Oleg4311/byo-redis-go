@@ -31,7 +31,7 @@ check 2 HSET user name Ada role admin
 check Ada HGET user name
 check 2 SADD tags go redis
 check 1 SISMEMBER tags go
-check "(error) WRONGTYPE Operation against a key holding the wrong kind of value" LPUSH greeting x
+check "WRONGTYPE Operation against a key holding the wrong kind of value" LPUSH greeting x # redis-cli вне терминала печатает ошибку без префикса "(error)"
 check -2 TTL missing
 check OK SET temp 1 EX 100
 check 100 TTL temp
