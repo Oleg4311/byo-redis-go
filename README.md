@@ -118,4 +118,8 @@ scripts/compat.sh              # нужны redis-tools (redis-cli, redis-benchm
 
 ## Лицензия
 
-MIT
+MIT · Сделано с помощью Claude
+
+## English
+
+**byo-redis-go** is a Redis-compatible server in Go: RESP2, strings, lists, hashes, sets, TTL (lazy and active expiry), `MULTI/EXEC` transactions and an append-only file that survives crashes (relative expirations are persisted as absolute times, a torn final command is dropped, corruption in the middle stops startup instead of losing data silently). It is verified against real clients: go-redis in tests, and `redis-cli` (including `--pipe`) and `redis-benchmark` in CI. The command engine has no network code, so the same code runs in the browser demo (Go → WebAssembly): https://oleg4311.github.io/byo-redis-go/. Not implemented: pub/sub, blocking commands, sorted sets, replication, RESP3. Release binaries carry build provenance attestations (`gh attestation verify`).
