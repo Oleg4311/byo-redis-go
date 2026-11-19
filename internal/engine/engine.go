@@ -12,7 +12,7 @@ import (
 )
 
 // Version — версия движка, её показывают INFO и HELLO.
-const Version = "0.1.0"
+const Version = "0.1.1"
 
 const (
 	errSyntax    = "ERR syntax error"
